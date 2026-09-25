@@ -1,6 +1,6 @@
 # Security Policy
 
-SatQuery processes complex raster formats and loads third-party model code/weights. Both are security boundaries.
+SATCHETAK processes complex raster formats and loads third-party model code/weights. Both are security boundaries.
 
 ## Untrusted raster uploads
 

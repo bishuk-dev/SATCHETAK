@@ -2,11 +2,11 @@
 
 ## Purpose
 
-SatQuery needs natural-language understanding, but the language model is **not** the scientific decision-maker.
+SATCHETAK needs natural-language understanding, but the language model is **not** the scientific decision-maker.
 
 The language layer performs four jobs:
 
-1. **Intent interpretation** — convert free-form user language into a bounded SatQuery task.
+1. **Intent interpretation** — convert free-form user language into a bounded SATCHETAK task.
 2. **Parameter extraction** — identify requested region, temporal relation, measurement request, and desired output.
 3. **Clarification** — turn structured validation failures into clear user-facing requests.
 4. **Explanation** — convert verified evidence and deterministic metrics into concise natural-language results.
@@ -323,4 +323,4 @@ explain(verified_result, query) -> str
 
 This keeps it replaceable.
 
-The rest of SatQuery must continue to work if the language model is swapped from Qwen to another open model that satisfies the same contract.
+The rest of SATCHETAK must continue to work if the language model is swapped from Qwen to another open model that satisfies the same contract.

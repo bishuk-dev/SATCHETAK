@@ -144,7 +144,7 @@ See `REBUILD_PLAN.md`.
 
 **Decision:** Use a replaceable open instruction-tuned generative LLM for query interpretation and final explanation. Qwen-family models are the first candidates to evaluate.
 
-**Reason:** SatQuery requires flexible natural-language understanding, paraphrase handling, structured parameter extraction, clarification, and concise explanation. A general open instruct model is sufficient for these language tasks and avoids creating separate intent/NER/summarization models.
+**Reason:** SATCHETAK requires flexible natural-language understanding, paraphrase handling, structured parameter extraction, clarification, and concise explanation. A general open instruct model is sufficient for these language tasks and avoids creating separate intent/NER/summarization models.
 
 **Constraint:** The language model does not decide scientific feasibility and does not execute tools. It returns typed intents. Deterministic policy validates the request and selects only registered workflows.
 

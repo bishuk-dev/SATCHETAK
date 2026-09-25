@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Repository-wide instructions for any AI coding agent working on SatQuery AI.
+Repository-wide instructions for any AI coding agent working on SATCHETAK.
 
 ## Mission
 
@@ -109,7 +109,7 @@ Rules:
 
 Do not create microservices by default.
 
-The language model is accessed through a stable internal interface. Qwen-family models are first candidates, but no code outside `satquery/language/` may depend on Qwen-specific APIs. A model runner may be isolated only when a real dependency/runtime conflict is demonstrated.
+The language model is accessed through a stable internal interface. Qwen-family models are first candidates, but no code outside `satchetak/language/` may depend on Qwen-specific APIs. A model runner may be isolated only when a real dependency/runtime conflict is demonstrated.
 
 ## Input safety and semantics
 

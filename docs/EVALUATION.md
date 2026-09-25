@@ -18,7 +18,7 @@ Question:
 
 Question:
 
-> Does SatQuery preserve geometry, reject invalid requests, and return correctly linked evidence?
+> Does SATCHETAK preserve geometry, reject invalid requests, and return correctly linked evidence?
 
 ## Single-image evaluation
 
@@ -147,7 +147,7 @@ Do not repeatedly tune after observing sealed results.
 Rules:
 
 - no estimated benchmark rows;
-- no copied paper result labeled as “SatQuery”;
+- no copied paper result labeled as “SATCHETAK”;
 - no 0.00 for a test that did not run;
 - no numeric “confidence” because it looks good in the UI.
 

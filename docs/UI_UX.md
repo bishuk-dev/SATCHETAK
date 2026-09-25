@@ -6,7 +6,7 @@ The viewer is the product. Chat text is secondary.
 
 A user should be able to answer:
 
-1. What input did SatQuery use?
+1. What input did SATCHETAK use?
 2. What region is the answer about?
 3. What changed/detected?
 4. How was the number computed?

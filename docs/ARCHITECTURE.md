@@ -68,55 +68,55 @@ One API process owns request orchestration. Model adapters are in-process when d
 ## Package boundaries
 
 ```text
-satquery/contracts/
+satchetak/contracts/
 ```
 
 Typed public domain schemas. No heavy ML/GDAL side effects.
 
 ```text
-satquery/ingestion/
+satchetak/ingestion/
 ```
 
 Safe raster inspection, metadata inventory, band mapping, modality state.
 
 ```text
-satquery/geo/
+satchetak/geo/
 ```
 
 Pure/deterministic geospatial operations: reprojection, alignment checks, mask geometry, area, index math.
 
 ```text
-satquery/language/
+satchetak/language/
 ```
 
 Replaceable open-LLM boundary for free-form query interpretation and verified-result explanation. It returns typed schemas and never executes scientific tools directly.
 
 ```text
-satquery/routing/
+satchetak/routing/
 ```
 
 Maps validated typed intent + input inventory to one of four workflows. Routing is deterministic after language interpretation. No free-form planning loop.
 
 ```text
-satquery/workflows/
+satchetak/workflows/
 ```
 
 Owns domain composition. A workflow is allowed to call one or more model adapters and geo operators.
 
 ```text
-satquery/model_adapters/
+satchetak/model_adapters/
 ```
 
 One adapter per model family. Each adapter owns exact preprocessing/postprocessing and declares its input contract.
 
 ```text
-satquery/verification/
+satchetak/verification/
 ```
 
 Checks that result claims are supported by compatible evidence.
 
 ```text
-satquery/evidence/
+satchetak/evidence/
 ```
 
 Writes masks, GeoJSON, previews, traces, and the final structured result.

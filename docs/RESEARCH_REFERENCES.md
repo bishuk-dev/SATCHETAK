@@ -1,6 +1,6 @@
 # Research and Source References
 
-This file records primary/official sources used for architectural choices. It is not a claim that SatQuery reproduces every reported result.
+This file records primary/official sources used for architectural choices. It is not a claim that SATCHETAK reproduces every reported result.
 
 
 ## Language layer
@@ -18,7 +18,7 @@ Use:
 - evidence-grounded explanation.
 
 Important:
-SatQuery does not rely on a Qwen checkpoint for remote-sensing perception or physical measurement. The exact model size is selected by our language evaluation, not by marketing benchmark position.
+SATCHETAK does not rely on a Qwen checkpoint for remote-sensing perception or physical measurement. The exact model size is selected by our language evaluation, not by marketing benchmark position.
 
 ---
 
@@ -153,7 +153,7 @@ Relevant support:
 
 Used as evidence that remote-sensing VLM adaptation and multisensor VQA/grounding are active research areas.
 
-Important: SatQuery v2 does not train on BigEarthNet.txt initially.
+Important: SATCHETAK v2 does not train on BigEarthNet.txt initially.
 
 ### AnySat — CVPR 2025 Highlight
 Official repository:
@@ -177,7 +177,7 @@ Architectural lesson used:
 - tool order matters;
 - planner/executor/verifier is safer than unconstrained language-only reasoning.
 
-SatQuery adopts the validity principle but does **not** implement an autonomous multi-agent system.
+SATCHETAK adopts the validity principle but does **not** implement an autonomous multi-agent system.
 
 ---
 

@@ -1,6 +1,6 @@
 # Contributing
 
-SatQuery is a research-informed engineering project. Correct sensor semantics and reproducible evidence matter more than feature count.
+SATCHETAK is a research-informed engineering project. Correct sensor semantics and reproducible evidence matter more than feature count.
 
 ## Before opening a change
 

@@ -21,7 +21,7 @@ Use this for every new workflow/model adapter.
 - [ ] Deterministic preprocessing where possible.
 - [ ] Device selection.
 - [ ] Inference under `torch.inference_mode()` where appropriate.
-- [ ] Output normalized into SatQuery evidence schema.
+- [ ] Output normalized into SATCHETAK evidence schema.
 - [ ] No framework tensor leaks into API schema.
 - [ ] Model/version recorded in provenance.
 

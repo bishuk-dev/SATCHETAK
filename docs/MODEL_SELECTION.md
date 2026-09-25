@@ -2,7 +2,7 @@
 
 ## Policy
 
-SatQuery does not train or fine-tune models in the initial rebuild.
+SATCHETAK does not train or fine-tune models in the initial rebuild.
 
 A model is adopted only when:
 
@@ -46,7 +46,7 @@ multilingual/colloquial query handling
 
 Selection principle:
 
-> Choose the **smallest** model that passes SatQuery's language qualification suite with acceptable latency and memory use.
+> Choose the **smallest** model that passes SATCHETAK's language qualification suite with acceptable latency and memory use.
 
 Do not assume the newest/largest checkpoint is automatically better for this role.
 

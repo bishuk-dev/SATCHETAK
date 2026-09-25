@@ -2,7 +2,7 @@
 
 ## Product definition
 
-SatQuery AI is an evidence-grounded interface over pretrained remote-sensing models and deterministic GIS operations.
+SATCHETAK is an evidence-grounded interface over pretrained remote-sensing models and deterministic GIS operations.
 
 The MVP is deliberately small.
 
@@ -108,7 +108,7 @@ A crop-map difference may then support an agricultural change statement.
 
 ## Non-goals
 
-Initial SatQuery will not:
+Initial SATCHETAK will not:
 
 - train/fine-tune any model;
 - predict crop yield;

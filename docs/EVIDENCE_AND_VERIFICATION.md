@@ -2,7 +2,7 @@
 
 ## Goal
 
-A SatQuery answer is a set of **claims linked to evidence**, not merely generated text.
+A SATCHETAK answer is a set of **claims linked to evidence**, not merely generated text.
 
 ## Result shape
 

@@ -1,8 +1,8 @@
-# SatQuery AI
+# SATCHETAK
 
 > **Evidence-grounded remote-sensing analysis through natural-language queries, built from qualified pretrained models and deterministic geospatial tools.**
 
-SatQuery AI is a focused remote-sensing assistant for four workflows:
+SATCHETAK is a focused remote-sensing assistant for four workflows:
 
 1. **Single-image analysis** — answer questions about one image and localize visible evidence when the selected model supports grounding.
 2. **Paired-image change detection** — identify where two aligned observations differ and return a change mask.
@@ -83,11 +83,11 @@ No model becomes a production default merely because it has a strong paper resul
 ## Repository shape
 
 ```text
-satquery/
+satchetak/
 ├── apps/
 │   ├── api/                  # FastAPI transport only
 │   └── web/                  # Next.js + geospatial viewer
-├── satquery/
+├── satchetak/
 │   ├── contracts/            # shared typed schemas
 │   ├── ingestion/            # raster inspection and safe loading
 │   ├── geo/                  # CRS, alignment, masks, measurements
@@ -144,4 +144,4 @@ Read these in order before implementation:
 
 This document pack defines the **fresh rebuild specification**. Implementation should start only after the decisions in [`docs/DECISIONS.md`](docs/DECISIONS.md) are accepted.
 
-**SatQuery AI — ask the Earth, verify the answer.**
+**SATCHETAK — ask the Earth, verify the answer.**

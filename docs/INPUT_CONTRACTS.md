@@ -1,6 +1,6 @@
 # Input and Data Contracts
 
-The most important SatQuery rule is that **a tensor is not enough**. The system needs the physical meaning of its channels and spatial context.
+The most important SATCHETAK rule is that **a tensor is not enough**. The system needs the physical meaning of its channels and spatial context.
 
 ## Raster inventory
 
@@ -163,7 +163,7 @@ post VH
 
 The official repository warns that preprocessing must be compatible with the training/inference pipeline. For ASF-derived imagery it documents RTC Gamma processing, gamma0 radiometry/power scaling, and recommends DEM matching and speckle filtering.
 
-SatQuery must reject:
+SATCHETAK must reject:
 
 - unknown polarization;
 - unknown radiometric domain;
