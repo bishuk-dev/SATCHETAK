@@ -173,9 +173,26 @@ SATCHETAK must reject:
 
 ## Prithvi optical flood
 
-Use only the model card's six-band input semantics.
+Model:
+`ibm-nasa-geospatial/Prithvi-EO-2.0-300M-TL-Sen1Floods11`
 
-Do not synthesize missing SWIR/NIR from RGB.
+Required Sentinel-2 band semantics:
+
+```text
+B02 / Blue
+B03 / Green
+B04 / Red
+B8A / Narrow NIR
+B11 / SWIR1
+B12 / SWIR2
+```
+
+The adapter maps canonical band roles to this exact order.
+
+Do not synthesize missing NIR/SWIR from RGB.
+
+The cloud/no-data class remains invalid-data evidence and must never be collapsed into the no-flood class.
+
 
 ## Prithvi crop classification
 

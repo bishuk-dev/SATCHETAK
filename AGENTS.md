@@ -111,6 +111,23 @@ Do not create microservices by default.
 
 The language model is accessed through a stable internal interface. Qwen-family models are first candidates, but no code outside `satchetak/language/` may depend on Qwen-specific APIs. A model runner may be isolated only when a real dependency/runtime conflict is demonstrated.
 
+## Flood adapter invariants
+
+During qualification SATCHETAK has two flood adapters:
+
+```text
+AI4G Flood  → Sentinel-1 SAR pre/post VV/VH
+Prithvi     → Sentinel-2 optical six-band
+```
+
+- Never silently substitute one for the other.
+- Never coerce RGB into Prithvi's six-band input.
+- Never treat arbitrary SAR as AI4G-compatible.
+- Do not fuse both masks without a dedicated evaluated fusion decision.
+- Normalize only outputs to the common `FloodEvidence` contract.
+- Keep explicit model endpoints for benchmarking.
+- Add unified `/flood` only after independent qualification.
+
 ## Input safety and semantics
 
 Never classify modality using band count alone.

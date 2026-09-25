@@ -6,6 +6,8 @@ This documentation is intentionally split by responsibility so that implementati
 |---|---|
 | `PROJECT_SCOPE.md` | exact MVP, non-goals, success definition |
 | `ARCHITECTURE.md` | component boundaries and end-to-end data flow |
+| `ARCHITECTURE_INVARIANTS.md` | frozen scientific/dependency guardrails and regression matrix |
+| `ARCHITECTURE_AUDIT.md` | final consistency review and remaining implementation risks |
 | `WORKFLOWS.md` | contracts for single-image, change, flood, agriculture |
 | `LANGUAGE_LAYER.md` | natural-language interpreter/explainer architecture and Qwen policy |
 | `MODEL_SELECTION.md` | pretrained-model choices, qualification policy, licenses |

@@ -160,3 +160,44 @@ See `REBUILD_PLAN.md`.
 
 **Reason:** This prevents a fluent text model from becoming the source of physical or spatial truth.
 
+
+---
+
+## ADR-017 — Dual flood adapters during qualification
+
+**Status:** Accepted
+
+Use Microsoft AI4G Flood for qualified Sentinel-1 pre/post VV/VH SAR and IBM/NASA Prithvi-EO-2.0-300M-TL-Sen1Floods11 for qualified Sentinel-2 six-band optical imagery.
+
+They share a post-inference `FloodEvidence` schema, not a common input tensor.
+
+---
+
+## ADR-018 — Explicit flood endpoints before unified routing
+
+**Status:** Accepted
+
+Qualification endpoints:
+
+```text
+POST /api/v1/flood/ai4g
+POST /api/v1/flood/prithvi
+```
+
+Unified `/api/v1/flood` is added only after both adapters independently qualify.
+
+---
+
+## ADR-019 — No automatic flood-mask fusion in MVP
+
+**Status:** Accepted
+
+If both masks exist, comparison is allowed. Union/intersection/weighted fusion requires separate research and evaluation.
+
+---
+
+## ADR-020 — Flood retirement requires domain coverage
+
+**Status:** Accepted
+
+A higher aggregate metric alone does not justify deleting the second adapter. Removal requires evidence that the remaining path covers the removed adapter's operating domain, or an explicit scope/maintenance decision.

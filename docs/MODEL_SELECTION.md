@@ -131,42 +131,59 @@ LEVIR-CD-style models are primarily high-resolution optical binary change detect
 
 ## 3. Flood
 
-### Primary SAR candidate: Microsoft AI4G Flood
+Flood starts with two independent candidates.
 
-Official source:
-- `microsoft/ai4g-flood`
-- trained model artifact included by the authors;
-- associated peer-reviewed Nature Communications paper (2025).
+### Candidate A — Microsoft AI4G Flood
 
-Model:
-- U-Net;
-- MobileNetV2 encoder;
-- Sentinel-1 VV/VH;
-- pre/post pair workflow.
+Official source: `microsoft/ai4g-flood`, with associated peer-reviewed Nature Communications publication (2025).
 
-Why selected:
+Published implementation:
+- U-Net with MobileNetV2 encoder;
+- Sentinel-1 SAR;
+- VV/VH;
+- pre/post pair.
 
-- task-specific;
-- official code and artifact;
-- paper-backed deployment methodology;
-- explicit preprocessing warnings;
-- directly produces flood extent rather than relying on VLM description.
+The official repository states the model was trained on Sentinel-1 RTC data and documents compatible preprocessing requirements. Arbitrary SAR is not qualified by default.
 
-Important input limitation:
-
-The official docs emphasize Sentinel-1 RTC-compatible processing. Other SAR sensors/products are out of qualified scope until separately tested.
-
-### Optical fallback candidate: IBM/NASA Prithvi EO 2.0 Sen1Floods11
+### Candidate B — IBM/NASA Prithvi EO 2.0 Sen1Floods11
 
 Model:
 `ibm-nasa-geospatial/Prithvi-EO-2.0-300M-TL-Sen1Floods11`
 
-License shown on model card: Apache-2.0.
+Official model card:
+- flood segmentation;
+- Sentinel-2 optical;
+- six bands: Blue, Green, Red, Narrow NIR, SWIR1, SWIR2;
+- classes no-water, water/flood, cloud/no-data;
+- Apache-2.0 shown on the model card.
 
-Input:
-six documented optical bands used by the Sen1Floods11 fine-tune.
+### Comparison policy
 
-This is a later path, not required for the first flood milestone.
+Compare:
+
+```text
+IoU / F1 / precision / recall
+cloud/nodata behavior
+permanent-water behavior
+geographic shift
+small flood regions
+urban/vegetated scenes
+preprocessing mismatch
+VRAM / RAM / latency / throughput
+dependency complexity
+```
+
+Do not treat them as identical-information models. SAR and optical have different operational strengths and failure modes.
+
+Possible outcomes:
+
+```text
+A. keep AI4G, retire Prithvi
+B. keep Prithvi, retire AI4G
+C. keep both because their operating domains are complementary
+```
+
+Outcome C is acceptable.
 
 ---
 

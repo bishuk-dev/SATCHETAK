@@ -9,7 +9,8 @@ This document prevents capability leakage between model types.
 | Select workflow | Deterministic router | No | No |
 | Describe/ground one EO image | EarthDial / grounding specialist | Yes, visual semantics | No physical measurement |
 | Detect generic T1/T2 change | Open-CD specialist | Yes, change mask | No physical area by itself |
-| Detect flood | AI4G Flood / qualified flood model | Yes, flood mask | No physical area by itself |
+| Detect SAR flood | Microsoft AI4G Flood | Yes, flood mask | No physical area by itself |
+| Detect optical flood | IBM/NASA Prithvi Sen1Floods11 | Yes, water/flood + cloud/nodata mask | No physical area by itself |
 | Compute NDVI / ΔNDVI | GIS/spectral operator | Deterministic | Yes |
 | Crop-map inference | Qualified Prithvi crop model | Yes, within contract | No physical area by itself |
 | Area / distance / counts | GIS operator | No | Yes |

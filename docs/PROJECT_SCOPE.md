@@ -52,25 +52,30 @@ Initial scope is **change / no-change**, not universal semantic change classific
 
 ### 3. Flood analysis
 
-Primary MVP path:
+Flood starts with **two independently qualified paths**:
+
+**Path A — Sentinel-1 SAR**
 
 ```text
 Sentinel-1 compatible pre-event VV/VH
 +
 Sentinel-1 compatible post-event VV/VH
+→ Microsoft AI4G Flood
 → flood mask
 ```
 
-The first candidate is the Microsoft AI4G Flood model, whose official implementation expects Sentinel-1 RTC-style inputs and documents preprocessing constraints.
-
-Optional later optical path:
+**Path B — Sentinel-2 optical**
 
 ```text
 compatible Sentinel-2 six-band input
-→ Prithvi Sen1Floods11 flood segmentation
+Blue + Green + Red + Narrow NIR + SWIR1 + SWIR2
+→ IBM/NASA Prithvi-EO-2.0-300M-TL-Sen1Floods11
+→ water/flood + cloud/no-data mask
 ```
 
-Do not route arbitrary SAR or RGB into either model.
+These paths are evaluated independently. Their outputs normalize to a shared flood-evidence contract, but their inputs and preprocessing remain model-specific.
+
+Do not route arbitrary SAR, RGB-only imagery, or unknown band semantics into either model. No automatic optical/SAR mask fusion is part of the MVP.
 
 ### 4. Agricultural change analysis
 

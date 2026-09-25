@@ -80,6 +80,8 @@ Answer + visual evidence + metrics + warnings + provenance
 
 No model becomes a production default merely because it has a strong paper result. It must pass our own compatibility, inference, and failure tests.
 
+Flood is intentionally dual-path during qualification: Microsoft AI4G Flood for qualified Sentinel-1 SAR and IBM/NASA Prithvi flood segmentation for qualified Sentinel-2 optical imagery. They keep separate input contracts but normalize outputs to a shared flood-evidence schema.
+
 ## Repository shape
 
 ```text

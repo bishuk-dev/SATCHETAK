@@ -121,6 +121,58 @@ satchetak/evidence/
 
 Writes masks, GeoJSON, previews, traces, and the final structured result.
 
+
+## Flood sub-architecture
+
+Flood is one workflow with two independent adapters:
+
+```text
+                    FLOOD REQUEST
+                         │
+                         ▼
+                  Input Inventory
+                         │
+              ┌──────────┴──────────┐
+              │                     │
+              ▼                     ▼
+   SAR contract satisfied?   Optical contract satisfied?
+              │                     │
+              ▼                     ▼
+      AI4G Flood Adapter     Prithvi Flood Adapter
+      Sentinel-1 VV/VH       Sentinel-2 6 bands
+      pre + post pair        single observation
+              │                     │
+              ▼                     ▼
+         flood mask             flood mask
+              └──────────┬──────────┘
+                         ▼
+                 Common FloodEvidence
+                         │
+                         ▼
+                 GIS + Verification
+                         │
+                         ▼
+                   SATCHETAK result
+```
+
+Qualification endpoints:
+
+```text
+POST /api/v1/flood/ai4g
+POST /api/v1/flood/prithvi
+```
+
+Eventual unified endpoint:
+
+```text
+POST /api/v1/flood
+```
+
+The unified endpoint selects only among qualified adapters whose input contracts are satisfied. If both compatible modalities are available, comparison mode may return both independent evidence objects.
+
+Do not automatically fuse masks. Union/intersection/weighted fusion is a separate algorithmic decision and requires its own evaluation.
+
+
 ## Model adapter interface
 
 Conceptually:

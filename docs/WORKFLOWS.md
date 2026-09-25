@@ -105,57 +105,109 @@ Do not freeze it as the default until compared with at least one alternative che
 
 # 3. Flood workflow
 
-## Primary path: Sentinel-1 SAR pair
+Flood is one workflow with two explicitly different sensor paths.
 
-### Model
+## Path A — Microsoft AI4G Flood (Sentinel-1 SAR)
 
-Microsoft `ai4g-flood`.
-
-Published code/model accompanies the Nature Communications work “Mapping global floods with 10 years of satellite radar data” (2025).
-
-### Required semantics
-
-The official workflow uses pre- and post-event Sentinel-1 VV/VH and stresses compatible RTC-style preprocessing. The repository documents gamma0/power processing for ASF RTC usage and recommends matching acquisition conditions.
-
-Input contract is therefore strict:
+Input contract:
 
 ```text
-pre VV
-pre VH
-post VV
-post VH
-+
-known SAR preprocessing/radiometry
-+
-spatial compatibility
+pre-event VV
+pre-event VH
+post-event VV
+post-event VH
++ Sentinel-1-compatible RTC/radiometric preprocessing
++ spatial compatibility
 ```
 
-Do not route arbitrary RISAT, SLC, amplitude, unknown-polarization, or uncalibrated GRD into this checkpoint and present it as validated.
+The official repository states the model was trained on Sentinel-1 RTC data and warns that preprocessing must be compatible. Arbitrary SAR, unknown polarization, and unknown radiometry are out of qualified scope until separately evaluated.
 
-### Output
-
+Output:
 - flood mask;
 - valid-data mask;
-- permanent-water filtering status;
-- flood area if georeferencing is valid;
-- warning if domain differs from qualified conditions.
+- model provenance;
+- permanent-water filtering state;
+- area only when georeferencing is valid.
 
-### Permanent water
+The official repository warns about permanent-water false positives and recommends post-filtering. SATCHETAK must record whether that filter was applied.
 
-The model's own repository recommends post-filtering permanent water using an external water/land-cover source.
+## Path B — IBM/NASA Prithvi flood (Sentinel-2 optical)
 
-For offline/demo operation, permanent-water filtering must be either:
+Model:
 
-- supplied as an input/reference layer; or
-- explicitly reported as not applied.
+`ibm-nasa-geospatial/Prithvi-EO-2.0-300M-TL-Sen1Floods11`
 
-Never hide this choice.
+The official model card describes a Sentinel-2 flood-segmentation checkpoint fine-tuned on Sen1Floods11.
 
-## Later optical fallback
+Required bands, in model order:
 
-IBM/NASA `Prithvi-EO-2.0-300M-TL-Sen1Floods11` is an official flood-segmentation checkpoint for its documented Sentinel-2 six-band contract.
+```text
+Blue
+Green
+Red
+Narrow NIR
+SWIR1
+SWIR2
+```
 
-It is not a generic RGB flood detector.
+Classes:
+
+```text
+0  = no water
+1  = water/flood
+-1 = no data/cloud
+```
+
+RGB-only imagery is unsupported. Missing NIR/SWIR must not be synthesized.
+
+## Shared flood evidence
+
+Both adapters normalize output to:
+
+```text
+FloodEvidence
+  source_model
+  source_modality
+  flood_mask
+  valid_mask
+  cloud_or_nodata_mask (optional)
+  permanent_water_filter_state
+  model_scores (optional)
+  warnings
+  provenance
+```
+
+The shared contract begins after inference. Inputs stay model-specific.
+
+## Explicit evaluation endpoints
+
+```text
+POST /api/v1/flood/ai4g
+POST /api/v1/flood/prithvi
+```
+
+These endpoints never silently switch models.
+
+## Unified product endpoint
+
+After both adapters independently qualify:
+
+```text
+POST /api/v1/flood
+```
+
+Policy:
+
+```text
+valid Sentinel-1 SAR pre/post  → AI4G eligible
+valid Sentinel-2 six-band      → Prithvi eligible
+both available                 → explicit policy/comparison mode
+neither compatible             → UNSUPPORTED
+```
+
+## Retirement policy
+
+Do not remove the second adapter from one aggregate benchmark score. Retire it only if the remaining path adequately covers the same operational input domain, product scope drops that domain, or maintenance/license/runtime constraints justify removal.
 
 ---
 

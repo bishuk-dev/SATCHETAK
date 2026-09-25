@@ -121,27 +121,44 @@ Exit gate:
 
 ---
 
-## Phase 5 — SAR flood
+## Phase 5 — Flood: dual-adapter qualification
 
-Build the Microsoft AI4G Flood adapter.
-
-Required:
-
-- exact pre/post VV/VH contract;
-- preprocessing profile;
-- permanent-water filtering state;
-- valid-data mask;
-- flood area if georeferenced;
-- explicit rejection for unsupported SAR.
+### 5A — Microsoft AI4G Flood
+Build/qualify the Sentinel-1 SAR adapter with strict pre/post VV/VH and preprocessing contract.
 
 Exit gate:
+- official/example-compatible inference works;
+- wrong polarization/radiometry rejects;
+- flood mask maps correctly to source/geospatial coordinates.
 
-- official/example input reproduces valid inference;
-- wrong polarization/radiometry is rejected;
-- output mask/area maps correctly to source raster.
+### 5B — IBM/NASA Prithvi Flood
+Build/qualify the Sentinel-2 optical adapter with exact six-band ordering and cloud/no-data preservation.
+
+Exit gate:
+- official/example-compatible inference works;
+- missing/wrong band semantics reject;
+- cloud/no-data is not counted as no-flood;
+- mask maps correctly to source/geospatial coordinates.
+
+### 5C — Shared contract + benchmark endpoints
+Build:
+- `FloodEvidence`;
+- `/flood/ai4g`;
+- `/flood/prithvi`;
+- comparison harness;
+- operational metrics.
+
+No automatic fusion.
+
+Exit gate:
+- both adapters independently pass;
+- no silent fallback;
+- same GIS/verifier consumes both outputs;
+- reproducible comparison report exists.
 
 ---
 
+## Phase 6 — Agriculture
 ## Phase 6 — Agriculture
 
 ### 6A — deterministic vegetation change

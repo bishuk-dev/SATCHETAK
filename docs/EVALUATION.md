@@ -59,27 +59,51 @@ The Open-CD framework provides pretrained inference support and benchmark-compat
 
 ## Flood evaluation
 
-Primary SAR candidate:
+Evaluate each adapter independently, then compare workflow behavior.
 
-Microsoft AI4G Flood.
+### AI4G SAR
+Test official/example-compatible data, permanent-water false positives, nodata/swath boundaries, geographic shift, and preprocessing mismatch.
 
-Evaluation should include:
+### Prithvi optical
+Test official/example-compatible Sentinel-2 six-band data, cloud/no-data handling, geographic shift, water/flood confusion, and tiled inference.
 
-- official/example data that reproduces the published inference path;
-- at least one held-out flood event/source if practical;
-- false positives over permanent water;
-- nodata/swath-boundary behavior.
-
-Metrics:
+Shared task metrics:
 
 ```text
-flood IoU
+IoU
 precision
 recall
 F1
 ```
 
-Do not quote paper/global-map performance as our own result.
+Operational metrics:
+
+```text
+load time
+per-tile latency
+peak VRAM/RAM
+throughput
+dependency complexity
+```
+
+Compare by input condition rather than one aggregate score:
+
+```text
+clear optical
+cloudy optical
+SAR-only
+optical-only
+both available
+permanent-water-heavy
+urban
+vegetated floodplain
+```
+
+Do not treat Prithvi cloud/no-data as no-flood.
+
+Adapter retirement requires domain-coverage evidence or an explicit product-scope/maintenance decision.
+
+---
 
 ## Agriculture evaluation
 

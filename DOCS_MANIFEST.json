@@ -2,7 +2,7 @@
   "archive_name": "satchetak",
   "product_name": "SATCHETAK",
   "purpose": "Fresh rebuild specification using pretrained remote-sensing models, deterministic GIS, and an open generative language layer.",
-  "markdown_file_count": 23,
+  "markdown_file_count": 25,
   "files": [
     "AGENTS.md",
     "CLAUDE.md",
@@ -11,6 +11,8 @@
     "SECURITY.md",
     "docs/API_CONTRACT.md",
     "docs/ARCHITECTURE.md",
+    "docs/ARCHITECTURE_AUDIT.md",
+    "docs/ARCHITECTURE_INVARIANTS.md",
     "docs/DECISIONS.md",
     "docs/DEVELOPMENT_PLAN.md",
     "docs/EVALUATION.md",
@@ -37,6 +39,13 @@
     "GIS computes physical measurements",
     "No fabricated confidence percentages",
     "Modular monolith first",
-    "Legacy attempt preserved separately"
-  ]
+    "Legacy attempt preserved separately",
+    "Dual flood adapters: AI4G Sentinel-1 SAR and Prithvi Sentinel-2 optical",
+    "Explicit /flood/ai4g and /flood/prithvi qualification endpoints",
+    "Unified /flood only after independent qualification",
+    "No automatic flood-mask fusion in MVP",
+    "Flood adapter retirement requires domain-coverage evidence"
+  ],
+  "architecture_status": "internally verified; implementation remains phase-gated",
+  "architecture_audit_issues": 0
 }

@@ -106,6 +106,34 @@ ERROR
 }
 ```
 
+## Flood model endpoints
+
+During qualification:
+
+```http
+POST /api/v1/flood/ai4g
+POST /api/v1/flood/prithvi
+```
+
+These validate only their own model contracts, never silently fall back, and normalize successful outputs to the same `FloodEvidence` schema.
+
+After both qualify:
+
+```http
+POST /api/v1/flood
+```
+
+Suggested policy values:
+
+```text
+auto
+ai4g
+prithvi
+compare
+```
+
+`compare` is allowed only when both compatible input sets are available. It returns independent evidence objects and performs no automatic mask fusion.
+
 ## Artifact access
 
 ```http
