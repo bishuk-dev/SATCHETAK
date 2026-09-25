@@ -1,0 +1,42 @@
+{
+  "archive_name": "satchetak",
+  "product_name": "SatQuery AI",
+  "purpose": "Fresh rebuild specification using pretrained remote-sensing models, deterministic GIS, and an open generative language layer.",
+  "markdown_file_count": 23,
+  "files": [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "CONTRIBUTING.md",
+    "README.md",
+    "SECURITY.md",
+    "docs/API_CONTRACT.md",
+    "docs/ARCHITECTURE.md",
+    "docs/DECISIONS.md",
+    "docs/DEVELOPMENT_PLAN.md",
+    "docs/EVALUATION.md",
+    "docs/EVIDENCE_AND_VERIFICATION.md",
+    "docs/IMPLEMENTATION_CHECKLIST.md",
+    "docs/INPUT_CONTRACTS.md",
+    "docs/LANGUAGE_LAYER.md",
+    "docs/MODEL_SELECTION.md",
+    "docs/PROJECT_SCOPE.md",
+    "docs/README.md",
+    "docs/REBUILD_PLAN.md",
+    "docs/RESEARCH_REFERENCES.md",
+    "docs/RESPONSIBILITY_MATRIX.md",
+    "docs/UI_UX.md",
+    "docs/WORKFLOWS.md",
+    "models/REGISTRY_SPEC.md"
+  ],
+  "major_frozen_decisions": [
+    "No model training/fine-tuning in initial rebuild",
+    "Four scientific workflows only: single-image, change, flood, agriculture",
+    "Open generative LLM for language interpretation/explanation; Qwen family first candidate",
+    "Deterministic feasibility validation and routing",
+    "Specialist models produce scientific/spatial evidence",
+    "GIS computes physical measurements",
+    "No fabricated confidence percentages",
+    "Modular monolith first",
+    "Legacy attempt preserved separately"
+  ]
+}
