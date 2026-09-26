@@ -1,21 +1,38 @@
-# Architecture Audit
+# Architecture Audit — Current Direction
 
-## Automated consistency scan
+## Resolved inconsistencies
 
-No stale legacy naming or old single-flood-path wording was found.
+The documentation is now aligned around one product:
 
-## Manual architecture review
-- Language interpretation and scientific validity are separated.
-- Deterministic validation precedes routing.
-- Flood adapters keep different input contracts and share only a post-inference evidence contract.
-- Explicit endpoints prevent silent model switching.
-- No optical/SAR mask fusion is implied.
-- GIS owns measurements.
-- Phase gates keep broken model adapters from being hidden by later router/UI work.
+```text
+SATCHETAK Land Intelligence
+├─ Agriculture Monitoring
+└─ Urban / Land Development Monitoring
+```
+
+The old flood/disaster branch has been removed from the hackathon MVP.
+
+The primary interaction has changed from image upload to:
+
+```text
+location/AOI → observation discovery → analysis → recurring monitoring
+```
+
+ISRO integration is split correctly:
+
+```text
+Bhoonidhi → EO data discovery/download
+Bhuvan    → thematic/reference layers
+```
 
 ## Remaining implementation risks
-- Actual model qualification results remain unknown until checkpoints run locally.
-- TerraTorch/PyTorch/GDAL dependency compatibility must be tested in Phase 5; isolation is allowed only if a real conflict appears.
-- Thresholds and any calibration must come from validation, not documentation guesses.
 
-**Architecture status:** internally coherent and implementation-ready, subject to phase-gate verification.
+- exact Copernicus/Bhoonidhi auth and asset-access contracts must be validated during implementation;
+- AOI-specific cloud/valid-pixel screening may need more than catalogue-level cloud percentage;
+- generic change models can confuse seasonal/registration differences with real land change;
+- Sentinel-2 resolution limits urban claim granularity;
+- crop classification requires strict input compatibility.
+
+## Prototype recommendation
+
+Do not solve all risks at once. Prove Agriculture NDVI change end-to-end first, then add Urban/Land change, then additional providers.

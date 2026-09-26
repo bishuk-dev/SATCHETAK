@@ -1,149 +1,264 @@
 # SATCHETAK
 
-> **Evidence-grounded remote-sensing analysis through natural-language queries, built from qualified pretrained models and deterministic geospatial tools.**
+> **AI-powered land intelligence for agriculture and urban/land development.**
 
-SATCHETAK is a focused remote-sensing assistant for four workflows:
+## Run the working prototype
 
-1. **Single-image analysis** — answer questions about one image and localize visible evidence when the selected model supports grounding.
-2. **Paired-image change detection** — identify where two aligned observations differ and return a change mask.
-3. **Flood analysis** — map flood extent using a flood-specific model when the sensor/input contract is satisfied.
-4. **Agricultural change analysis** — detect vegetation/cropland change from compatible multispectral imagery and use a crop model only when its exact input contract is met.
+The prototype uses a FastAPI/Pydantic backend, React/TypeScript/Vite frontend, MapLibre map, and SQLite persistence.
 
-The system intentionally **does not train or fine-tune models in the initial build**. It integrates existing published checkpoints behind strict adapters, validates the input before inference, preserves geospatial metadata, and keeps language generation separate from physical measurement.
+For complete provider credentials, Ollama/Qwen, Bhuvan, monitoring, pricing, TLS, and verification instructions, see [Complete setup guide](docs/SETUP_GUIDE.md).
 
-Natural-language understanding is handled by a replaceable open generative LLM (Qwen-family models are the first candidates). The LLM converts free-form queries into typed intents and later explains verified evidence; deterministic policy still decides whether a workflow is allowed and physically possible.
+Configure backend integrations once instead of entering variables in every PowerShell session:
+
+```powershell
+Copy-Item .env.example .env
+notepad .env
+```
+
+The backend automatically loads the root `.env`; it is Git-ignored and process-level environment variables override it. Keep `VITE_` browser settings in `frontend/.env.local`.
+
+The primary UI is query-first: define an AOI and ask an observation, vegetation-change, or generic land-change question. The backend returns an inspectable typed plan before searching or analyzing imagery. Ambiguous requests fall back to catalogue discovery instead of manufacturing an analysis intent.
+
+```powershell
+# Terminal 1 — backend
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\.venv\Scripts\python.exe -m satchetak.app
+
+# Terminal 2 — frontend
+cd frontend
+npm install
+npm run dev
+```
+
+Open `http://127.0.0.1:5173`. FastAPI documentation is available at `http://127.0.0.1:8000/api/docs`.
+
+The default demo runs the full location → observation selection → NDVI T1/T2 → delta → area/statistics → inspectable evidence flow using deterministic simulated spectral grids. Every simulated field is visibly labelled. Analysis reports show dated T1/T2 true-colour artifacts followed by an exactly aligned threshold overlay; the contextual workspace basemap is kept visually and semantically separate.
+
+For real Sentinel-2 L2A pixel processing, create an OAuth client in the Copernicus Data Space Sentinel Hub dashboard and set its credentials only in the backend process:
+
+```powershell
+$env:CDSE_CLIENT_ID = "your-client-id"
+$env:CDSE_CLIENT_SECRET = "your-client-secret"
+.\.venv\Scripts\python.exe -m satchetak.app
+```
+
+Never put the client secret in frontend code or commit it to the repository. Live agriculture analysis requests B02/B03/B04/B08; urban/land analysis additionally requests B11/B12 SWIR plus scene/data masks. The backend computes NDVI, NDBI, and BSI changes, removes undersized isolated regions, categorizes conservative vegetation-to-bare, built-up-like, and other change candidates, and measures them in a local UTM CRS. B04/B03/B02 are rendered as readable true-colour evidence artifacts from the same aligned arrays used by the calculation.
+
+Urban reports use up to two quality-qualified intermediate scenes in addition to the baseline and latest scene. They separate change categories repeated across comparison dates from latest-only candidates, list the exact dates used, and explain the observed surface effect separately from possible causes or development implications.
+
+Completed reports include a structured evidence brief: direct answer, evidence basis, decision relevance, confidence explanation, limitations, and the next verification action. A separate observation-quality section shows candidate/qualified/rejected counts, date-selection rationale, comparison span, and intermediate checks. These statements are generated from verified metrics rather than invented by a language model.
+
+If a managed network performs TLS inspection, install its root CA in the Windows certificate store. Alternatively, point the backend to a trusted PEM bundle:
+
+```powershell
+$env:SATCHETAK_CA_BUNDLE = "C:\path\to\organization-ca-bundle.pem"
+```
+
+Restart the backend after changing trust configuration. TLS verification is never disabled.
+
+### Optional Qwen explanation
+
+The backend can call a small Qwen model through any OpenAI-compatible chat-completions server. Start the model server separately, then configure:
+
+```powershell
+$env:QWEN_BASE_URL = "http://127.0.0.1:11434/v1"
+$env:QWEN_MODEL = "qwen2.5:1.5b"
+$env:QWEN_API_KEY = "ollama"
+```
+
+Qwen receives only the verified interpretation contract. Its output is rejected if it introduces a number not present in that contract, is malformed, or the service is unavailable. The report then uses the deterministic explanation automatically and exposes the language provenance under a collapsed section.
+
+### Additional providers and reference layers
+
+Live catalogue discovery tries Copernicus first, then a compatible configured Bhoonidhi Sentinel-2 collection, then the public Planetary Computer Sentinel-2 STAC catalogue. Provider-specific catalogue searches are also available through `POST /api/v1/providers/bhoonidhi/search` and `POST /api/v1/providers/planetary_computer/search`.
+
+```powershell
+$env:BHOONIDHI_USER_ID = "your-user-id"
+$env:BHOONIDHI_PASSWORD = "your-password"
+$env:BHOONIDHI_COLLECTION = "your-collection-id"
+$env:PLANETARY_COMPUTER_ENABLED = "true"
+```
+
+Bhoonidhi credentials stay on the backend. Non-Sentinel Bhoonidhi collections can be searched explicitly, but they are not silently passed into the Sentinel-2 Red/NIR/SWIR analysis.
+
+To add a Bhuvan thematic layer to the map, provide a browser-safe, properly attributed WMS/WMTS tile template supported by MapLibre:
+
+```dotenv
+VITE_BHUVAN_WMS_TILE_URL=https://your-approved-bhuvan-service.example/.../{bbox-epsg-3857}...
+```
+
+The layer is reference context and never becomes analytical evidence unless a future workflow explicitly validates it.
+
+### Monitoring and market evidence
+
+Each saved report has a **Check for newer imagery** action backed by `POST /api/v1/locations/{id}/monitor/check`. It records the latest eligible observation without pretending that a desktop prototype is an always-on scheduler.
+
+Market evidence is intentionally separate from satellite evidence. Users can enter traceable transaction or asking-price comparables in the collapsed Market-price evidence panel. The backend reports price-per-hectare range, median, and first-to-latest change through verified records only; it does not invent a valuation or infer price from pixels.
+
+Quality checks:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest
+cd frontend
+npm run lint
+npm run build
+```
+
+SATCHETAK is a location-first monitoring product. A user selects land once, and SATCHETAK turns suitable new satellite observations into evidence-grounded change maps, vegetation/land metrics, and natural-language insights.
 
 ## Core principle
 
-> **A language model may interpret a question and explain evidence. It may not manufacture evidence, missing bands, geometry, area, change, or confidence.**
+> **Monitor land → detect change → quantify it → explain it.**
 
-## Why this rebuild exists
-
-The previous implementation grew too quickly across training, multimodal fusion, orchestration, GIS, evaluation, frontend, and deployment. The rebuild reduces the problem to four vertical slices and adds one capability at a time.
-
-The project is complete only when each workflow can independently pass:
-
-- input-contract tests,
-- deterministic geospatial tests,
-- model smoke tests,
-- failure-policy tests,
-- end-to-end evidence tests.
-
-## MVP flow
+## Product flow
 
 ```text
-User query + image(s)
-        │
-        ▼
-Input inspection
-(sensor / bands / CRS / time / alignment)
-        │
-        ▼
-Language interpreter
-(open LLM → typed intent)
-        │
-        ▼
-Feasibility validator
-        │
-        ▼
-Bounded task router
-        │
-        ├── single-image
-        ├── paired change
-        ├── flood
-        └── agriculture
-        │
-        ▼
-Qualified model adapter
-        +
-deterministic geospatial operators
-        │
-        ▼
-Verifier
-        │
-        ▼
-Answer + visual evidence + metrics + warnings + provenance
+Create monitored location
+        ↓
+Search place / enter latitude-longitude
+        ↓
+Draw Area of Interest (AOI)
+        ↓
+Choose monitoring objective
+  ├─ Agriculture
+  └─ Urban / Land Development
+        ↓
+Choose period / baseline
+        ↓
+Discover suitable satellite observations
+        ↓
+Filter cloud / invalid scenes
+        ↓
+Select baseline + latest valid observation
+        ↓
+Run domain analysis + GIS measurement
+        ↓
+Map evidence + metrics + evidence-grounded explanation
+        ↓
+Save location for future observations
 ```
 
-## Initial pretrained-model strategy
+The user does **not** need to upload imagery for the normal workflow. Manual upload remains a secondary expert/debug path for private or commercial imagery.
 
-| Workflow | Initial model/tool strategy | Status |
-|---|---|---|
-| Language interpretation / explanation | **Qwen-family open instruct model**, size selected by qualification rather than parameter count | Candidate to qualify |
-| Single-image VQA / scene reasoning | **EarthDial 4B** family, using the variant whose published input contract matches the image | Candidate to qualify |
-| Visual grounding | EarthDial grounding first; **GeoGround** may be evaluated as a specialist if grounding quality is insufficient | Candidate |
-| Generic paired change | **Open-CD** adapter; benchmark available pretrained checkpoints before promoting one default | Candidate family |
-| SAR flood | **Microsoft AI4G Flood** pretrained Sentinel-1 model | Primary candidate |
-| Optical flood fallback | **IBM/NASA Prithvi-EO-2.0 Sen1Floods11** checkpoint for its documented Sentinel-2 band contract | Later candidate |
-| Agricultural crop map | **IBM/NASA Prithvi-EO-1.0 multi-temporal crop-classification** checkpoint when its exact HLS 18-band/3-timestamp contract is satisfied | Primary narrow candidate |
-| Generic vegetation change | Deterministic spectral-index change + optional change mask; no unsupported crop/yield inference | Core deterministic workflow |
+## Commercial MVP
 
-No model becomes a production default merely because it has a strong paper result. It must pass our own compatibility, inference, and failure tests.
+### Agriculture monitoring
 
-Flood is intentionally dual-path during qualification: Microsoft AI4G Flood for qualified Sentinel-1 SAR and IBM/NASA Prithvi flood segmentation for qualified Sentinel-2 optical imagery. They keep separate input contracts but normalize outputs to a shared flood-evidence schema.
+- NDVI / vegetation state
+- NDMI where supported
+- vegetation increase/decrease
+- temporal trend
+- anomaly/change polygons
+- optional crop classification only when the exact model input contract is satisfied
 
-## Repository shape
+Do not claim disease, nutrient deficiency, yield loss, or crop stress causes without validated models and ground truth.
+
+### Urban / land-development monitoring
+
+- generic land change
+- built-up expansion where supported
+- green-cover loss
+- disturbed/cleared land
+- change polygons
+- changed-area measurements
+
+With free 10 m Sentinel-2 data, SATCHETAK targets **large-area land change**, not individual-house or parcel-level surveillance.
+
+## Observation as a Service
+
+The primary domain objects are:
 
 ```text
-satchetak/
-├── apps/
-│   ├── api/                  # FastAPI transport only
-│   └── web/                  # Next.js + geospatial viewer
-├── satchetak/
-│   ├── contracts/            # shared typed schemas
-│   ├── ingestion/            # raster inspection and safe loading
-│   ├── geo/                  # CRS, alignment, masks, measurements
-│   ├── language/             # open LLM interpretation + explanation
-│   ├── routing/              # bounded deterministic workflow selection
-│   ├── workflows/
-│   │   ├── single_image/
-│   │   ├── change/
-│   │   ├── flood/
-│   │   └── agriculture/
-│   ├── model_adapters/       # pretrained model wrappers
-│   ├── evidence/             # evidence objects and artifact writing
-│   └── verification/         # feasibility and result verification
-├── models/                   # registry metadata, no weights in Git
-├── tests/
-├── runtime/                  # local generated artifacts, gitignored
-├── docs/
-├── AGENTS.md
-├── CLAUDE.md
-├── CONTRIBUTING.md
-├── SECURITY.md
-└── README.md
+MonitoredLocation
+├─ name
+├─ AOI
+├─ sector
+├─ observation policy
+├─ baseline
+├─ observation history
+└─ analysis history
+
+Observation
+├─ provider
+├─ satellite / sensor
+├─ acquisition time
+├─ cloud / quality metadata
+├─ bands / CRS
+└─ asset references
+
+Analysis
+├─ T1
+├─ T2
+├─ workflow
+├─ evidence
+├─ metrics
+└─ explanation
 ```
 
-## Start here
+## Data providers
 
-Read these in order before implementation:
+Prototype priority:
 
-1. [`docs/PROJECT_SCOPE.md`](docs/PROJECT_SCOPE.md)
-2. [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
-3. [`docs/WORKFLOWS.md`](docs/WORKFLOWS.md)
-4. [`docs/LANGUAGE_LAYER.md`](docs/LANGUAGE_LAYER.md)
-5. [`docs/MODEL_SELECTION.md`](docs/MODEL_SELECTION.md)
-6. [`docs/INPUT_CONTRACTS.md`](docs/INPUT_CONTRACTS.md)
-7. [`docs/EVIDENCE_AND_VERIFICATION.md`](docs/EVIDENCE_AND_VERIFICATION.md)
-8. [`docs/DEVELOPMENT_PLAN.md`](docs/DEVELOPMENT_PLAN.md)
-9. [`AGENTS.md`](AGENTS.md) for AI-assisted coding rules.
+```text
+1. Copernicus Data Space Ecosystem
+   → primary global Sentinel catalogue/data source
 
-## Non-goals for the initial build
+2. Bhoonidhi (ISRO)
+   → Indian EO discovery/download and future India-specific differentiation
 
-- training or fine-tuning foundation models;
-- free-form autonomous agents;
-- multi-agent swarms;
-- arbitrary Python/shell execution from user queries;
-- vector databases or RAG without a demonstrated requirement;
-- pretending RGB contains NIR/SWIR;
-- pretending arbitrary SAR is Sentinel-1 VV/VH;
-- estimating physical area without valid georeferencing;
-- producing a numeric confidence percentage that has not been calibrated;
-- Kubernetes/Kafka/service-mesh infrastructure;
-- supporting every satellite sensor.
+3. Microsoft Planetary Computer
+   → secondary STAC/open-data provider
 
-## Status
+4. Bhuvan (ISRO)
+   → thematic/reference layers, not the primary raw-image pipeline
+```
 
-This document pack defines the **fresh rebuild specification**. Implementation should start only after the decisions in [`docs/DECISIONS.md`](docs/DECISIONS.md) are accepted.
+Provider access sits behind a small interface so the analytics layer does not depend on a portal.
 
-**SATCHETAK — ask the Earth, verify the answer.**
+## Model/tool strategy
+
+| Responsibility | Initial strategy |
+|---|---|
+| Language interpretation / explanation | Typed deterministic layer now; optional small Qwen-family instruct model behind the same contract later |
+| Single-observation semantic questions | EarthDial or another qualified RS-VLM |
+| Paired-image change | Open-CD qualified checkpoint |
+| Agriculture crop classification | Prithvi crop checkpoint only for its exact compatible input |
+| Spectral/GIS analytics | Rasterio / GDAL / NumPy |
+
+No training/fine-tuning is required for the first prototype.
+
+## Prototype success
+
+The first useful build is complete when this works end-to-end:
+
+```text
+AOI
+→ real satellite search
+→ valid T1/T2 selection
+→ agriculture OR land-change analysis
+→ before/after view
+→ evidence overlay
+→ measured change
+→ evidence-grounded explanation
+→ save MonitoredLocation
+```
+
+## Product reference
+
+The app now has a separate landing page and a `/#/dashboard` workspace with agricultural and development purchase screens, expanded vegetation statistics, dated analytical imagery, an opacity-controlled categorized change overlay, clickable region explanations, saved report history, print/PDF support, evidence JSON export, and MapLibre satellite/street basemaps. See [land screening and workspace](docs/LAND_SCREENING.md) for supported questions, evidence limits, artifact delivery, basemap configuration, and browser checks.
+
+SatSure is a useful commercial reference because it demonstrates that customers pay for decision-ready Earth intelligence rather than raw imagery. SATCHETAK should not copy SatSure feature-for-feature. Its initial differentiation is a **self-service monitored-location workflow** with natural-language exploration and visible evidence/provenance.
+
+## Non-goals for the hackathon MVP
+
+- flood/disaster-response workflows;
+- real-time satellite claims;
+- building-level surveillance from 10 m imagery;
+- custom model training;
+- microservices/Kafka/Kubernetes;
+- multi-agent systems;
+- billing/enterprise tenancy;
+- supporting every satellite/provider.
+
+**SATCHETAK — monitor land, verify change.**

@@ -1,113 +1,64 @@
-# UI / UX Specification
+# UI / UX
 
-## Product principle
+## AOI selection
 
-The viewer is the product. Chat text is secondary.
+The map is the primary spatial input. Activate **Draw rectangle**, press at one corner, drag to the opposite corner, and release. A coordinate tooltip follows the cursor while it moves over the map. The selected rectangle synchronizes directly with the west/south/east/north fields, and editing those fields updates the rectangle.
 
-A user should be able to answer:
+## Principle
 
-1. What input did SATCHETAK use?
-2. What region is the answer about?
-3. What changed/detected?
-4. How was the number computed?
-5. What limitations/warnings apply?
+SATCHETAK is **map-first, monitoring-first**. Chat is an interface to the monitoring product, not the product itself.
 
-without opening developer logs.
-
-## Main layout
-
-Desktop:
+## Main screen
 
 ```text
 ┌───────────────────────────────────────────────────────────┐
-│ project / input status / workflow                         │
-├──────────────┬─────────────────────────────┬──────────────┤
-│ Inputs       │ Map / image viewer          │ Answer       │
-│ metadata     │ overlays                    │ evidence     │
-│ bands/time   │ before/after controls       │ metrics      │
-│ warnings     │                             │ provenance   │
-└──────────────┴─────────────────────────────┴──────────────┘
-│ Query bar                                                 │
+│ Search place / latitude-longitude                         │
+├───────────────────────────────┬───────────────────────────┤
+│                               │ Sector                    │
+│              MAP              │ Agriculture | Urban/Land  │
+│                               │                           │
+│          [draw AOI]           │ Period                    │
+│                               │ 3M | 6M | 1Y              │
+│                               │                           │
+│                               │ [Analyze]                 │
+├───────────────────────────────┴───────────────────────────┤
+│ Observation timeline: T1 --------------------------- T2   │
+├───────────────────────────────────────────────────────────┤
+│ Before | After | Change / NDVI overlay                    │
+├───────────────────────────────────────────────────────────┤
+│ Metrics | warnings | provenance | Qwen explanation        │
+│ [Monitor this location]                                   │
 └───────────────────────────────────────────────────────────┘
 ```
 
-## Single image
+## User journey
 
-Display:
+1. Search a place or enter coordinates.
+2. Draw AOI.
+3. Choose Agriculture or Urban/Land.
+4. Choose monitoring period.
+5. SATCHETAK searches the catalogue.
+6. Show candidate count and rejected-scene reasons when useful.
+7. Show exact selected T1/T2 dates.
+8. Render before/after + evidence overlay.
+9. Show metrics and warnings.
+10. Allow natural-language questions about the verified result.
+11. Save as a monitored location.
 
-- image;
-- box/mask overlays;
-- toggle overlay visibility;
-- answer;
-- input metadata summary.
+## Wording
 
-## Change
+Use:
 
-Must have:
+- "periodic satellite monitoring"
+- "as new observations become available"
+- "latest usable observation"
+- "vegetation decline"
+- "land change"
 
-- side-by-side or swipe T1/T2;
-- change-mask toggle;
-- opacity slider;
-- changed-area metric when valid.
+Avoid unsupported:
 
-## Flood
-
-Must show:
-
-- pre/post SAR visualization or derived view;
-- flood mask;
-- permanent-water-filter status;
-- valid/nodata areas;
-- area metric.
-
-Do not color nodata as “not flooded”.
-
-## Agriculture
-
-Display:
-
-- T1/T2 optical composite;
-- NDVI T1;
-- NDVI T2;
-- ΔNDVI;
-- crop class maps only when crop workflow is valid.
-
-Use neutral wording such as “vegetation decrease” unless the model/data supports a stronger agricultural interpretation.
-
-## Warning design
-
-Warnings are not hidden in tooltips.
-
-Examples:
-
-```text
-CRS unavailable — physical area is disabled.
-Input SAR radiometry does not match the qualified flood model.
-Crop classifier not used — input is not an HLS 3-timestamp stack.
-```
-
-## Confidence
-
-Do not show a circular “AI confidence 94%” meter until system confidence is calibrated.
-
-Allowed initially:
-
-- model score distribution;
-- warning badges;
-- evidence availability;
-- outcome status.
-
-## Trace
-
-User-facing trace should be concise:
-
-```text
-Input inspected
-→ paired as Sentinel-1 pre/post
-→ AI4G flood model
-→ permanent-water filter: not applied
-→ mask polygonized
-→ area computed in EPSG:xxxx
-```
-
-No internal chain-of-thought.
+- "real-time satellite monitoring"
+- "disease detected"
+- "yield loss"
+- "illegal construction detected"
+- building-level precision from Sentinel-2.

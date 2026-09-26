@@ -1,65 +1,35 @@
 # Implementation Checklist
 
-Use this for every new workflow/model adapter.
+## P0
 
-## Before coding
+- [x] Map/lat-long navigation (place-name geocoding remains optional)
+- [x] AOI rectangle creation and polygon validation
+- [x] Copernicus Sentinel-2 search
+- [x] candidate quality filtering
+- [x] automatic baseline/latest selection plus intermediate temporal support
+- [x] required-band acquisition
+- [x] NDVI T1/T2
+- [x] ΔNDVI/change regions
+- [x] area/statistics
+- [x] before/after/evidence UI
+- [ ] Qwen structured explanation
+- [x] save MonitoredLocation and analysis history
 
-- [ ] Current phase permits the work.
-- [ ] Official source/paper read.
-- [ ] Checkpoint/model revision identified.
-- [ ] License/usage terms recorded or explicitly unresolved.
-- [ ] Exact input bands/modalities known.
-- [ ] Preprocessing known.
-- [ ] Output semantics known.
-- [ ] Expected hardware known.
-- [ ] Failure cases listed.
+## P1
 
-## Adapter
+- [x] deterministic six-band generic urban/land change with temporal support
+- [ ] Open-CD qualification
+- [ ] Bhoonidhi provider
+- [ ] Planetary Computer fallback
+- [ ] Bhuvan thematic overlays
+- [ ] recurring new-observation check
 
-- [ ] Input contract validator.
-- [ ] Lazy model loading.
-- [ ] Deterministic preprocessing where possible.
-- [ ] Device selection.
-- [ ] Inference under `torch.inference_mode()` where appropriate.
-- [ ] Output normalized into SATCHETAK evidence schema.
-- [ ] No framework tensor leaks into API schema.
-- [ ] Model/version recorded in provenance.
+## Guardrails
 
-## Geospatial
+- [x] no flood/disaster branch in MVP
+- [x] no fake real-time wording
+- [x] no unsupported disease/yield/construction claims
+- [x] exact dates/provider/sensor visible
+- [x] no LLM-generated measurements
 
-- [ ] Original dimensions preserved.
-- [ ] Resize/tile transform recorded.
-- [ ] Mask restored to original coordinate space.
-- [ ] NoData/valid mask preserved.
-- [ ] CRS/area math unit tested.
-
-## Tests
-
-- [ ] Valid input.
-- [ ] Invalid modality.
-- [ ] Missing band/polarization.
-- [ ] Missing metadata.
-- [ ] Empty/degenerate output.
-- [ ] Model unavailable.
-- [ ] Golden end-to-end case.
-- [ ] Refusal/unsupported case.
-
-## Promotion
-
-- [ ] RESEARCHED
-- [ ] DOWNLOADED
-- [ ] SMOKE_TESTED
-- [ ] QUALIFIED
-- [ ] DEFAULT only after explicit decision
-
-
-## Language-layer checklist
-
-- [ ] Intent schema is bounded.
-- [ ] Structured output validated by Pydantic/JSON Schema.
-- [ ] No arbitrary tool names accepted.
-- [ ] One repair retry maximum.
-- [ ] Unsupported/ambiguous query produces clarification.
-- [ ] Final explanation receives verified evidence only.
-- [ ] No scientific confidence invented by the LLM.
-- [ ] Language model can be swapped without changing router/workflow code.
+Unchecked provider/model items are deliberate post-vertical-slice integrations, not hidden capabilities. The usable product path currently ends in deterministic, evidence-grounded language; Qwen may later paraphrase the same verified contract but must never create measurements.

@@ -1,312 +1,148 @@
 # Architecture
 
-## Architectural style
-
-The MVP is a **modular monolith**, not a microservice platform.
-
-One API process owns request orchestration. Model adapters are in-process when dependency-compatible. A model may move to an isolated runner only after an actual runtime/dependency conflict is demonstrated.
-
-## Main components
+## Implemented prototype stack
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│                         Web UI                              │
-│ Next.js + map/raster viewer + evidence panels              │
-└──────────────────────────┬──────────────────────────────────┘
-                           │ HTTP
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                        FastAPI                              │
-│ auth/limits • upload • jobs • result transport             │
-└──────────────────────────┬──────────────────────────────────┘
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    Input Inspector                          │
-│ format • metadata • bands • modality • CRS • time          │
-└──────────────────────────┬──────────────────────────────────┘
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                Language Interpreter                         │
-│ open LLM → typed intent / parameters                        │
-└──────────────────────────┬──────────────────────────────────┘
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                Feasibility Validator                        │
-│ input contract • required bands • pair semantics            │
-└──────────────────────────┬──────────────────────────────────┘
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                 Deterministic Router                        │
-│ SINGLE_IMAGE | CHANGE | FLOOD | AGRICULTURE                │
-└──────────────────────────┬──────────────────────────────────┘
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                      Workflow                               │
-│ validates workflow-specific preconditions                  │
-│ coordinates model adapter + geospatial operations          │
-└───────────────┬────────────────────────────┬────────────────┘
-                │                            │
-                ▼                            ▼
-┌──────────────────────────┐      ┌───────────────────────────┐
-│     Model adapters       │      │    Geo operators          │
-│ EarthDial / Open-CD /    │      │ align • reproject •       │
-│ AI4G Flood / Prithvi     │      │ polygonize • area • index │
-└───────────────┬──────────┘      └────────────┬──────────────┘
-                └──────────────┬───────────────┘
-                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    Verification                             │
-│ sensor validity • geometry • output sanity • claim support │
-└──────────────────────────┬──────────────────────────────────┘
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  Evidence/result layer                      │
-│ answer • mask • boxes • metrics • warnings • provenance    │
-└─────────────────────────────────────────────────────────────┘
+Frontend   React 19 + TypeScript + Vite + MapLibre GL
+Backend    FastAPI + Pydantic 2 + Uvicorn
+Storage    SQLite + filesystem
+Testing    Pytest + FastAPI/httpx TestClient
 ```
 
-## Package boundaries
+The repository remains a modular monolith. FastAPI owns the typed HTTP boundary and OpenAPI contract; domain calculations remain framework-independent. React consumes the API through typed client functions, and the production Vite bundle can be served by FastAPI from `frontend/dist`.
+
+## Product architecture
 
 ```text
-satchetak/contracts/
+USER
+  │
+  ├─ place / lat-long
+  ├─ AOI drawing
+  ├─ sector: agriculture | urban_land
+  └─ period / question
+  ▼
+AOI SERVICE
+  ▼
+OBSERVATION PLANNER
+  ▼
+PROVIDER ADAPTER
+  ├─ Copernicus Data Space
+  ├─ Bhoonidhi
+  └─ Planetary Computer
+  ▼
+CANDIDATE SCENES
+  ▼
+QUALITY / CLOUD / COVERAGE FILTER
+  ▼
+T1 / T2 SELECTOR
+  ▼
+ACQUISITION + NORMALIZATION
+  ▼
+DOMAIN WORKFLOW
+  ├─ Agriculture
+  └─ Urban / Land
+  ▼
+GIS METRICS + VERIFIER
+  ▼
+EVIDENCE OBJECT
+  ▼
+QWEN EXPLANATION
+  ▼
+MAP / DASHBOARD / REPORT
 ```
 
-Typed public domain schemas. No heavy ML/GDAL side effects.
+Bhuvan is integrated separately as a thematic/reference-layer provider.
+
+## Primary domain objects
+
+### MonitoredLocation
 
 ```text
-satchetak/ingestion/
+id
+name
+AOI
+sector
+observation_policy
+baseline_observation
+latest_observation
+observation_history
+analysis_history
 ```
 
-Safe raster inspection, metadata inventory, band mapping, modality state.
+### Observation
 
 ```text
-satchetak/geo/
+provider
+provider_scene_id
+satellite
+sensor
+acquisition_time
+cloud_cover
+product_level
+bands
+CRS
+asset_references
+quality_state
 ```
 
-Pure/deterministic geospatial operations: reprojection, alignment checks, mask geometry, area, index math.
+### Analysis
 
 ```text
-satchetak/language/
+location_id
+T1
+T2
+workflow
+evidence
+artifacts
+metrics
+warnings
+explanation
 ```
 
-Replaceable open-LLM boundary for free-form query interpretation and verified-result explanation. It returns typed schemas and never executes scientific tools directly.
+`evidence` contains numerical scientific inputs/outputs. `artifacts` contains immutable presentation products derived from those same arrays. Keeping the two separate prevents UI rendering concerns from becoming the scientific contract and lets later classifiers add new overlays or polygon products without changing observation acquisition.
 
-```text
-satchetak/routing/
-```
+Prototype artifact persistence is analysis-scoped filesystem storage beside SQLite. The API authorizes artifact reads through the persisted analysis descriptor instead of exposing arbitrary filesystem paths.
 
-Maps validated typed intent + input inventory to one of four workflows. Routing is deterministic after language interpretation. No free-form planning loop.
+## Provider boundary
 
-```text
-satchetak/workflows/
-```
-
-Owns domain composition. A workflow is allowed to call one or more model adapters and geo operators.
-
-```text
-satchetak/model_adapters/
-```
-
-One adapter per model family. Each adapter owns exact preprocessing/postprocessing and declares its input contract.
-
-```text
-satchetak/verification/
-```
-
-Checks that result claims are supported by compatible evidence.
-
-```text
-satchetak/evidence/
-```
-
-Writes masks, GeoJSON, previews, traces, and the final structured result.
-
-
-## Flood sub-architecture
-
-Flood is one workflow with two independent adapters:
-
-```text
-                    FLOOD REQUEST
-                         │
-                         ▼
-                  Input Inventory
-                         │
-              ┌──────────┴──────────┐
-              │                     │
-              ▼                     ▼
-   SAR contract satisfied?   Optical contract satisfied?
-              │                     │
-              ▼                     ▼
-      AI4G Flood Adapter     Prithvi Flood Adapter
-      Sentinel-1 VV/VH       Sentinel-2 6 bands
-      pre + post pair        single observation
-              │                     │
-              ▼                     ▼
-         flood mask             flood mask
-              └──────────┬──────────┘
-                         ▼
-                 Common FloodEvidence
-                         │
-                         ▼
-                 GIS + Verification
-                         │
-                         ▼
-                   SATCHETAK result
-```
-
-Qualification endpoints:
-
-```text
-POST /api/v1/flood/ai4g
-POST /api/v1/flood/prithvi
-```
-
-Eventual unified endpoint:
-
-```text
-POST /api/v1/flood
-```
-
-The unified endpoint selects only among qualified adapters whose input contracts are satisfied. If both compatible modalities are available, comparison mode may return both independent evidence objects.
-
-Do not automatically fuse masks. Union/intersection/weighted fusion is a separate algorithmic decision and requires its own evaluation.
-
-
-## Model adapter interface
-
-Conceptually:
+Keep the provider contract minimal:
 
 ```python
-class ModelAdapter:
-    model_id: str
-    capabilities: set[str]
-
-    def validate_input(self, inventory) -> ValidationResult: ...
-    def load(self) -> None: ...
-    def infer(self, request) -> ModelOutput: ...
-    def health(self) -> ModelHealth: ...
+class ImageryProvider:
+    search(aoi, date_range, requirements)
+    get_metadata(scene_id)
+    acquire(scene_id, assets=None)
 ```
 
-The interface should remain stable even if a model later moves to a separate process.
+Analytics code must not depend directly on provider HTTP APIs.
 
-## Language model interface
+## Modular monolith
 
-Conceptually:
+Use one FastAPI backend initially.
 
-```python
-class LanguageInterpreter:
-    def interpret(self, query, input_summary) -> IntentRequest: ...
-
-class ExplanationGenerator:
-    def explain(self, verified_result, query) -> str: ...
-```
-
-The same underlying Qwen-family model may serve both interfaces, but prompts/schemas stay separate. The language model cannot add unregistered workflow names or bypass feasibility checks.
-
-## Workflow interface
-
-Each workflow receives:
+Suggested modules:
 
 ```text
-query
-input inventory
-runtime artifact directory
+satchetak/
+├─ contracts/
+├─ aoi/
+├─ imagery/
+│  ├─ provider.py
+│  ├─ copernicus.py
+│  ├─ bhoonidhi.py
+│  ├─ planetary_computer.py
+│  └─ ranking.py
+├─ workflows/
+│  ├─ agriculture/
+│  └─ land_change/
+├─ geo/
+├─ language/
+├─ evidence/
+└─ verification/
 ```
 
-and returns an `AnalysisResult`.
+## Persistence
 
-A workflow must not expose raw framework-specific tensors outside its internal/model-adapter boundary.
+Prototype: filesystem + SQLite if persistence is needed.
 
-## State and storage
-
-Do not add PostgreSQL/Redis on day one.
-
-Initial persistence:
-
-```text
-runtime/
-  analyses/
-    <analysis_id>/
-      request.json
-      inventory.json
-      trace.json
-      result.json
-      artifacts/
-```
-
-This is sufficient for deterministic local development and demos.
-
-Add a database only when concurrent users, long-term history, authentication, or distributed workers make it necessary.
-
-## Job execution
-
-Phase 1-4 may use synchronous execution for development.
-
-Before the final UI, long model calls should use a bounded local job queue:
-
-```text
-POST /analyses
-→ analysis_id
-
-GET /analyses/{id}
-→ queued | running | completed | failed
-```
-
-No Redis/Celery requirement until one process is insufficient.
-
-## Frontend
-
-Preferred:
-
-```text
-Next.js + TypeScript
-MapLibre GL JS
-```
-
-Raster display should use server-generated tiles/previews rather than loading arbitrary multi-gigabyte GeoTIFFs directly into the browser.
-
-Use `rio-tiler`/COG tile endpoints inside the API before deploying a separate TiTiler service.
-
-## Dependency isolation rule
-
-Do not preemptively create four model services.
-
-Start in one Python environment where possible.
-
-If a qualified adapter forces incompatible dependency versions, isolate **that adapter only** behind a local process/container with a small versioned JSON contract.
-
-## Observability
-
-Each inference trace records:
-
-- analysis ID;
-- workflow;
-- input IDs/hashes;
-- model ID/revision;
-- preprocessing profile;
-- device;
-- start/end timestamps;
-- warnings;
-- artifact IDs;
-- failure code.
-
-Do not expose hidden chain-of-thought.
-
-## Quantitative computation
-
-Physical quantities follow:
-
-```text
-model/algorithm mask
-      ↓
-valid-mask intersection
-      ↓
-pixel → geospatial geometry
-      ↓
-project to suitable metric CRS where needed
-      ↓
-area/distance/count
-```
-
-A language model never generates the number.
+Do not introduce distributed infrastructure until the working vertical slice requires it.

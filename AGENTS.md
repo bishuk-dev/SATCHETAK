@@ -1,296 +1,113 @@
 # AGENTS.md
 
-Repository-wide instructions for any AI coding agent working on SATCHETAK.
+Repository-wide instructions for AI coding agents working on SATCHETAK.
 
 ## Mission
 
-Build a small, reliable remote-sensing system around **qualified pretrained models** and deterministic geospatial operations.
-
-The initial product has one replaceable **language layer** plus exactly four supported scientific workflows:
+Build the fastest credible **location-first land-intelligence prototype** for two verticals only:
 
 ```text
-language interpretation/explanation
-
-single image
-paired change
-flood
-agriculture change
+Agriculture Monitoring
+Urban / Land Development Monitoring
 ```
 
-Do not broaden scope unless the user explicitly approves it.
+Do not reintroduce flood/disaster workflows into the hackathon MVP.
 
-## Prime directive
+## Product invariant
 
-> **The model may explain evidence. It may not invent evidence.**
-
-This means:
-
-- no guessed CRS, GSD, bands, polarization, acquisition date, or sensor;
-- no guessed masks, bounding boxes, areas, distances, counts, or confidence;
-- no “reasonable default” that changes the physical meaning of data;
-- no hidden fallback from a failed specialist to a generic VLM that still returns a confident answer.
-
-## No-training rule
-
-The rebuild starts with **inference only**.
-
-Do not add:
-
-- training loops,
-- LoRA/QLoRA,
-- PEFT adapters,
-- fine-tuning datasets,
-- synthetic training data,
-- hyperparameter sweeps,
-
-unless the user explicitly changes this decision.
-
-Allowed:
-
-- downloading/pinning approved pretrained checkpoints;
-- deterministic preprocessing required by a model card/paper;
-- benchmark evaluation;
-- threshold selection on a declared validation set;
-- post-processing whose assumptions are documented and tested.
-
-## Phase lock
-
-Read `docs/DEVELOPMENT_PLAN.md` before making changes.
-
-Only implement the **current phase**. A later phase must not be started merely because it is convenient.
-
-Every phase has an exit gate. If the gate fails, fix the current phase instead of layering more code over it.
-
-## Mandatory pre-edit routine
-
-Before editing:
-
-1. `git status`
-2. `git log --oneline -10`
-3. Read:
-   - `docs/DECISIONS.md`
-   - `docs/DEVELOPMENT_PLAN.md`
-   - the workflow doc relevant to the task
-   - the exact model/input contract if model inference is involved
-4. Inspect the smallest relevant code/test surface.
-5. State the intended change boundary before writing code.
-
-If the code and docs disagree, report the conflict. Do not silently choose one.
-
-## Architecture constraints
-
-Keep these boundaries:
+The normal user journey is:
 
 ```text
-transport/API
-    ↓
-routing
-    ↓
-workflow
-    ↓
-model adapter + geo operators
-    ↓
-verification
-    ↓
-evidence/result
+MonitoredLocation / AOI
+→ observation discovery
+→ quality filtering
+→ T1/T2 selection
+→ analysis
+→ GIS measurement
+→ evidence
+→ Qwen explanation
 ```
 
-Rules:
+Manual image upload is secondary.
 
-- API routes do not contain scientific logic.
-- The language model converts free-form language to typed intents and explains verified results; it does not execute scientific tools.
-- Deterministic policy validates feasibility and chooses the workflow after language interpretation.
-- Model adapters do not perform routing.
-- Geospatial math does not depend on the VLM.
-- The VLM does not calculate physical area/distance.
-- Workflow code may compose model adapters and geo operators.
-- Verification runs before a result is declared successful.
-- Every model-specific preprocessing step lives with that adapter and cites its source in comments/docs.
+## Prime scientific rule
 
-Do not create microservices by default.
+> A language model may interpret a request and explain verified evidence. It may not manufacture evidence, geometry, dates, bands, masks, measurements, or confidence.
 
-The language model is accessed through a stable internal interface. Qwen-family models are first candidates, but no code outside `satchetak/language/` may depend on Qwen-specific APIs. A model runner may be isolated only when a real dependency/runtime conflict is demonstrated.
-
-## Flood adapter invariants
-
-During qualification SATCHETAK has two flood adapters:
-
-```text
-AI4G Flood  → Sentinel-1 SAR pre/post VV/VH
-Prithvi     → Sentinel-2 optical six-band
-```
-
-- Never silently substitute one for the other.
-- Never coerce RGB into Prithvi's six-band input.
-- Never treat arbitrary SAR as AI4G-compatible.
-- Do not fuse both masks without a dedicated evaluated fusion decision.
-- Normalize only outputs to the common `FloodEvidence` contract.
-- Keep explicit model endpoints for benchmarking.
-- Add unified `/flood` only after independent qualification.
-
-## Input safety and semantics
-
-Never classify modality using band count alone.
-
-Prefer, in order:
-
-1. explicit trusted metadata;
-2. band descriptions/tags;
-3. a user-provided explicit mapping recorded in provenance;
-4. otherwise `UNKNOWN`.
-
-Unknown is a valid state. Do not force it to optical or SAR.
-
-For temporal pairs:
-
-- shape equality is not geospatial alignment;
-- verify overlap, CRS transformability, transform/grid, and temporal order;
-- for benchmark PNG/JPEG pairs without georeferencing, mark alignment as `pixel_aligned_unverified`.
-
-For SAR:
-
-- do not treat values as ordinary image intensity;
-- enforce the exact radiometric/polarization contract of the selected model;
-- do not infer units from appearance.
-
-## Model adoption policy
-
-Before adding a checkpoint, record:
-
-- official paper/source;
-- official repository/model card;
-- exact model/revision/checkpoint;
-- license;
-- input modalities and bands;
-- expected band order;
-- radiometric domain;
-- image/tile size;
-- normalization;
-- output semantics;
-- known domain limits;
-- measured local smoke-test result.
-
-A model is one of:
-
-```text
-RESEARCHED
-DOWNLOADED
-SMOKE_TESTED
-QUALIFIED
-DEFAULT
-REJECTED
-```
-
-Never call `RESEARCHED` or `DOWNLOADED` a working model.
-
-## Confidence policy
-
-Do not invent percentages.
-
-Until calibration exists:
-
-- VLM textual answers: `confidence = null`;
-- segmentation/change models: probabilities may be exposed as **model scores**, not calibrated system confidence;
-- system confidence remains `unavailable` unless a documented calibration procedure has been run.
-
-## Failure policy
-
-Use structured outcomes:
-
-```text
-SUCCESS
-SUCCESS_WITH_WARNING
-REQUEST_INPUT
-UNSUPPORTED
-ABSTAIN
-ERROR
-```
-
-Examples:
-
-- one image + “what changed?” → `REQUEST_INPUT`;
-- RGB image + NDVI request → `UNSUPPORTED`;
-- missing CRS + semantic description → `SUCCESS_WITH_WARNING`;
-- missing CRS + hectare measurement → `UNSUPPORTED`;
-- unsupported SAR radiometry for flood model → `UNSUPPORTED`;
-- model crash → `ERROR`, never substitute fabricated output.
-
-## Testing rules
-
-Every scientific feature needs:
-
-1. unit tests for deterministic logic;
-2. contract tests for model inputs/outputs;
-3. negative tests for invalid data;
-4. one end-to-end golden-path test;
-5. one end-to-end refusal/failure test.
-
-Use synthetic rasters for deterministic tests. Do not use synthetic data as evidence of model accuracy.
-
-Never modify a test merely to match incorrect behavior.
-
-## AI coding discipline
-
-Avoid the failure pattern this rebuild is designed to prevent.
-
-Do not:
-
-- rewrite many modules in one step;
-- add abstractions “for later”;
-- change model, preprocessing, API shape, and UI together;
-- patch around a failing model with heuristics without documenting it;
-- add placeholder values that look real;
-- declare a phase complete from compilation alone.
+## Prototype priority
 
 Prefer:
 
 ```text
-one vertical slice
-→ run it
-→ inspect artifact
-→ test failure cases
-→ freeze contract
-→ move to next slice
+working vertical slice
+> simple maintainable architecture
+> extra providers
+> production infrastructure
 ```
 
-## Dependency discipline
+Never sacrifice scientific validity for speed.
 
-- The core API/geospatial environment should stay small.
-- Heavy model dependencies are optional extras/adapters.
-- Pin exact versions once a model is qualified.
-- Do not casually upgrade Transformers, PyTorch, CUDA, MMEngine/MMCV, TerraTorch, or GDAL.
-- If two qualified models require incompatible environments, document the conflict before isolating one into a subprocess/container.
+## Provider order
 
-## Security
+Implement in this order:
 
-Treat all uploaded rasters and archives as untrusted.
+1. Copernicus Data Space
+2. Bhoonidhi
+3. Planetary Computer
+4. Bhuvan thematic overlays
 
-- limit file size, raster dimensions, bands, decompressed pixels, and processing time;
-- block path traversal;
-- do not execute arbitrary user-controlled shell commands;
-- do not use `trust_remote_code=True` without a reviewed, pinned revision and an explicit decision record;
-- no secrets or model weights in Git.
-
-## Completion standard
-
-Before reporting a task complete:
-
-- inspect the final diff;
-- run targeted tests;
-- run broader affected tests;
-- run `git diff --check`;
-- verify generated artifacts manually when visual/geospatial output changed;
-- state exactly what was verified;
-- state what remains unverified;
-- never claim a benchmark, checkpoint, or deployment worked unless it actually ran.
-
-Use these labels precisely:
+Correct ISRO mental model:
 
 ```text
-implemented
-locally verified
-model-smoke-tested
-benchmark-evaluated
-qualified
-not yet validated
+Bhoonidhi → EO discovery/download
+Bhuvan    → thematic/reference layers
 ```
+
+## First end-to-end workflow
+
+Agriculture should be the first polished demo:
+
+```text
+Sentinel-2 L2A
+→ Red + NIR
+→ NDVI T1 / T2
+→ ΔNDVI
+→ change mask / polygons
+→ area + statistics
+→ map evidence
+→ Qwen explanation
+```
+
+Then add urban/land change using the strongest qualified change workflow.
+
+## Claim discipline
+
+Allowed examples:
+
+- vegetation decline/increase;
+- anomalous field regions;
+- land-cover change;
+- green-cover loss;
+- large-area development expansion;
+- changed area.
+
+Do not claim without validated evidence:
+
+- disease;
+- nutrient deficiency;
+- yield loss;
+- exact construction type;
+- individual-house appearance;
+- parcel-level encroachment from 10 m imagery.
+
+## No-training rule
+
+Initial prototype uses pretrained models and deterministic geospatial tools. Do not add training, LoRA, PEFT, or dataset pipelines unless explicitly approved.
+
+## Simplicity rules
+
+Use a modular monolith. Prefer SQLite/filesystem for prototype persistence. Do not introduce Postgres/PostGIS, Redis, S3, Kafka, Kubernetes, microservices, or multi-agent systems before the main vertical slice works.
+
+## Completion definition
+
+A capability is complete only when it is reachable from the location-first product flow and its evidence can be inspected in the UI.

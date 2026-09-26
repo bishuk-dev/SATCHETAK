@@ -1,34 +1,70 @@
 # CLAUDE.md
 
-Read and follow [`AGENTS.md`](AGENTS.md). It is the authoritative repository-wide AI instruction file.
+## Project
 
-Also read, in this order:
+SATCHETAK is a location-first **Land Intelligence** product for:
 
-1. [`docs/DECISIONS.md`](docs/DECISIONS.md)
-2. [`docs/DEVELOPMENT_PLAN.md`](docs/DEVELOPMENT_PLAN.md)
-3. the workflow/model/input document relevant to the current task.
+- Agriculture Monitoring
+- Urban / Land Development Monitoring
 
-## Claude-specific working protocol
+Core principle:
 
-Before code generation:
+> **Monitor land → detect change → quantify it → explain it.**
 
-- summarize the current phase in one sentence;
-- name the files you intend to modify;
-- identify the input/output contract being changed;
-- identify how the change will be tested.
+## Fast prototype path
 
-During implementation:
+```text
+AOI
+→ Copernicus satellite search
+→ valid T1/T2
+→ NDVI or land-change workflow
+→ evidence + area metrics
+→ Qwen explanation
+→ save monitored location
+```
 
-- keep the patch bounded to one vertical slice;
-- do not silently introduce training/fine-tuning;
-- do not broaden model support;
-- do not substitute a generic VLM when a specialist rejects an input;
-- do not invent confidence values or benchmark results.
+## Architecture
 
-After implementation:
+Keep one FastAPI modular monolith and a map-first frontend.
 
-- run the relevant tests;
-- inspect generated masks/overlays when applicable;
-- report verified facts separately from assumptions and future work.
+Primary domain objects:
 
-If uncertain about remote-sensing physics, a model input contract, or a checkpoint's preprocessing, stop and research the primary source rather than guessing.
+```text
+MonitoredLocation
+Observation
+Analysis
+```
+
+## Providers
+
+- Copernicus Data Space: first global provider
+- Bhoonidhi: ISRO EO catalogue/data provider
+- Planetary Computer: secondary global provider
+- Bhuvan: thematic/reference overlays
+
+Do not confuse Bhuvan with the raw EO acquisition role of Bhoonidhi.
+
+## Scientific rules
+
+1. Change requires valid temporal observations.
+2. NDVI requires Red + NIR.
+3. Physical area requires valid geospatial metadata.
+4. Qwen explains structured results; it does not invent them.
+5. Exact source acquisition dates remain visible.
+6. Cloud/quality failures are explicit.
+7. Sentinel-based monitoring is periodic/as-new-observations-arrive, not guaranteed real-time.
+8. 10 m imagery is not individual-building surveillance.
+
+## Build order
+
+1. AOI/map
+2. Copernicus discovery
+3. T1/T2 selection
+4. vegetation change
+5. evidence UI
+6. save monitored location
+7. urban/land change
+8. Bhoonidhi
+9. Planetary Computer/Bhuvan
+
+Do not over-engineer before step 6 works.

@@ -1,186 +1,48 @@
 # Evaluation
 
-## Principle
+## Goal
 
-We are not training models, but we still need to **qualify** them.
+Evaluate whether each prototype workflow is sufficiently reliable for its declared claim scope.
 
-A published checkpoint is evidence that a model worked under the authors' evaluation protocol. It is not proof that it works for our inputs.
+## Agriculture
 
-## Two evaluation layers
+Evaluate separately:
 
-### 1. Model qualification
+- NDVI/NDMI computation correctness
+- spatial alignment
+- threshold/change-mask stability
+- area reconstruction
+- crop-classification checkpoint only on compatible data
 
-Question:
+## Urban / land change
 
-> Does this pretrained checkpoint work correctly for the workflow and input contract we claim?
+Evaluate:
 
-### 2. System qualification
+- pair preprocessing
+- change-mask quality
+- false-change sensitivity to registration/season/cloud
+- area measurement
+- conservative semantic labeling
 
-Question:
+## Language layer
 
-> Does SATCHETAK preserve geometry, reject invalid requests, and return correctly linked evidence?
+Test whether Qwen:
 
-## Single-image evaluation
+- maps paraphrases to the correct typed intent
+- preserves dates/metrics from evidence
+- does not invent unsupported values
+- explains warnings clearly
 
-Candidate datasets:
+## Provider layer
 
-- VRSBench for remote-sensing VQA/grounding;
-- small manually curated demo set for product behavior.
+Test:
 
-Metrics depend on task:
+- AOI/date query correctness
+- pagination
+- required asset/band presence
+- cloud/quality metadata
+- provider failure handling
 
-```text
-VQA accuracy / accepted benchmark protocol
-grounding IoU / Acc@threshold
-```
+## Product demo gate
 
-Do not use a large language model as the only evaluator of spatial correctness.
-
-## Change detection evaluation
-
-Use the exact test split associated with the candidate checkpoint when reproducing baseline behavior, then a small cross-source holdout for robustness.
-
-Metrics:
-
-```text
-Precision
-Recall
-F1
-IoU
-```
-
-System sanity:
-
-- T1/T1 near-zero change;
-- image shift rejection or clear warning;
-- mask coordinate mapping.
-
-The Open-CD framework provides pretrained inference support and benchmark-compatible checkpoints, making it suitable for adapter-level qualification.
-
-## Flood evaluation
-
-Evaluate each adapter independently, then compare workflow behavior.
-
-### AI4G SAR
-Test official/example-compatible data, permanent-water false positives, nodata/swath boundaries, geographic shift, and preprocessing mismatch.
-
-### Prithvi optical
-Test official/example-compatible Sentinel-2 six-band data, cloud/no-data handling, geographic shift, water/flood confusion, and tiled inference.
-
-Shared task metrics:
-
-```text
-IoU
-precision
-recall
-F1
-```
-
-Operational metrics:
-
-```text
-load time
-per-tile latency
-peak VRAM/RAM
-throughput
-dependency complexity
-```
-
-Compare by input condition rather than one aggregate score:
-
-```text
-clear optical
-cloudy optical
-SAR-only
-optical-only
-both available
-permanent-water-heavy
-urban
-vegetated floodplain
-```
-
-Do not treat Prithvi cloud/no-data as no-flood.
-
-Adapter retirement requires domain-coverage evidence or an explicit product-scope/maintenance decision.
-
----
-
-## Agriculture evaluation
-
-### Spectral change
-
-Deterministic tests:
-
-- synthetic known Red/NIR rasters with analytically known NDVI;
-- nodata handling;
-- aligned-pair difference;
-- area calculation.
-
-Product sanity:
-
-- season/phenology warning;
-- clouds/invalid data exclusion when possible.
-
-### Crop classifier
-
-Use the official model's documented dataset/split or demo first.
-
-Metrics:
-
-```text
-mIoU / per-class IoU / accuracy
-```
-
-Do not claim crop classification on input that does not match the 18-band/3-timestamp contract.
-
-## Golden cases
-
-Maintain a small `tests/golden/` manifest with:
-
-```text
-case_id
-workflow
-inputs
-expected status
-expected evidence type
-required warning/error
-```
-
-Golden cases should test contracts, not exact neural pixels unless a checkpoint/version is frozen.
-
-## Sealed evaluation
-
-Once a model is promoted to `DEFAULT`, create a small sealed set that is not used to tune thresholds.
-
-Do not repeatedly tune after observing sealed results.
-
-## Model promotion gate
-
-`QUALIFIED` requires:
-
-- exact revision pinned;
-- preprocessing locked;
-- smoke test reproducible;
-- at least one positive case;
-- at least one negative/unsupported case;
-- metrics or qualitative acceptance criteria recorded;
-- output mapped back to original coordinate space correctly.
-
-## No fake metrics
-
-Rules:
-
-- no estimated benchmark rows;
-- no copied paper result labeled as “SATCHETAK”;
-- no 0.00 for a test that did not run;
-- no numeric “confidence” because it looks good in the UI.
-
-Use:
-
-```text
-NOT_RUN
-UNAVAILABLE
-NOT_APPLICABLE
-```
-
-where appropriate.
+A result is demo-ready only when the complete AOI → observation → evidence → explanation path works on real data and known limitations are visible.

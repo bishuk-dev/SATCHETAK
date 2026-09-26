@@ -1,9 +1,19 @@
 {
-  "archive_name": "satchetak",
-  "product_name": "SATCHETAK",
-  "purpose": "Fresh rebuild specification using pretrained remote-sensing models, deterministic GIS, and an open generative language layer.",
-  "markdown_file_count": 25,
-  "files": [
+  "project": "SATCHETAK",
+  "product": "Land Intelligence",
+  "scope": [
+    "Agriculture Monitoring",
+    "Urban / Land Development Monitoring"
+  ],
+  "core_principle": "Monitor land -> detect change -> quantify it -> explain it",
+  "primary_input": "MonitoredLocation / AOI",
+  "provider_priority": [
+    "Copernicus Data Space",
+    "Bhoonidhi",
+    "Microsoft Planetary Computer",
+    "Bhuvan thematic/reference"
+  ],
+  "docs": [
     "AGENTS.md",
     "CLAUDE.md",
     "CONTRIBUTING.md",
@@ -26,26 +36,9 @@
     "docs/REBUILD_PLAN.md",
     "docs/RESEARCH_REFERENCES.md",
     "docs/RESPONSIBILITY_MATRIX.md",
+    "docs/SETUP_GUIDE.md",
     "docs/UI_UX.md",
     "docs/WORKFLOWS.md",
     "models/REGISTRY_SPEC.md"
-  ],
-  "major_frozen_decisions": [
-    "No model training/fine-tuning in initial rebuild",
-    "Four scientific workflows only: single-image, change, flood, agriculture",
-    "Open generative LLM for language interpretation/explanation; Qwen family first candidate",
-    "Deterministic feasibility validation and routing",
-    "Specialist models produce scientific/spatial evidence",
-    "GIS computes physical measurements",
-    "No fabricated confidence percentages",
-    "Modular monolith first",
-    "Legacy attempt preserved separately",
-    "Dual flood adapters: AI4G Sentinel-1 SAR and Prithvi Sentinel-2 optical",
-    "Explicit /flood/ai4g and /flood/prithvi qualification endpoints",
-    "Unified /flood only after independent qualification",
-    "No automatic flood-mask fusion in MVP",
-    "Flood adapter retirement requires domain-coverage evidence"
-  ],
-  "architecture_status": "internally verified; implementation remains phase-gated",
-  "architecture_audit_issues": 0
+  ]
 }

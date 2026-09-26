@@ -1,152 +1,91 @@
-# Project Scope
+# Project Scope — SATCHETAK Land Intelligence
 
-## Product definition
+## Frozen commercial MVP
 
-SATCHETAK is an evidence-grounded interface over pretrained remote-sensing models and deterministic GIS operations.
+SATCHETAK is an AI-powered satellite land-monitoring platform for **Agriculture** and **Urban/Land Development**.
 
-The MVP is deliberately small.
+It turns recurring Earth-observation data for a user-defined AOI into evidence-grounded change maps, vegetation/land metrics, and natural-language insights.
 
-## Supported workflows
+## Problem
 
-### 1. Single-image analysis
+Businesses and organizations own or manage large land assets, but repeated manual inspection and remote-sensing analysis are expensive and specialist-heavy.
 
-Input:
-
-```text
-one compatible image
-+
-natural-language question
-```
-
-Outputs may include:
-
-- scene answer;
-- object/region description;
-- bounding box or mask when the selected grounded model supports it;
-- metadata warnings;
-- provenance.
-
-This workflow is qualitative unless a separate deterministic geospatial operation supplies a quantitative result.
-
-### 2. Paired-image change detection
-
-Input:
+SATCHETAK answers:
 
 ```text
-T1 + T2
+What changed?
+Where?
+How much?
+Should I inspect it?
 ```
 
-Required:
-
-- spatial compatibility;
-- known or user-confirmed temporal order;
-- a model-compatible visual representation.
-
-Output:
-
-- binary change mask;
-- changed-area geometry when georeferencing permits;
-- optional text explanation grounded in the mask.
-
-Initial scope is **change / no-change**, not universal semantic change classification.
-
-### 3. Flood analysis
-
-Flood starts with **two independently qualified paths**:
-
-**Path A — Sentinel-1 SAR**
+## Primary product primitive
 
 ```text
-Sentinel-1 compatible pre-event VV/VH
-+
-Sentinel-1 compatible post-event VV/VH
-→ Microsoft AI4G Flood
-→ flood mask
+MonitoredLocation = AOI + purpose + observation policy + history
 ```
 
-**Path B — Sentinel-2 optical**
+The user selects a location once; imagery is discovered automatically.
+
+## Vertical 1 — Agriculture
+
+In scope:
+
+- NDVI
+- NDMI when required bands exist
+- vegetation increase/decrease
+- temporal trend
+- field/anomaly regions
+- spatial extent and area
+- optional Prithvi crop classification only for compatible inputs
+
+Out of scope unless later validated:
+
+- disease diagnosis
+- nutrient deficiency diagnosis
+- yield prediction
+- causal agronomy claims
+
+## Vertical 2 — Urban / Land Development
+
+In scope:
+
+- generic land change
+- large-area built-up/development expansion when supported
+- green-cover change
+- disturbed/cleared land
+- temporal change polygons
+- area statistics
+
+Resolution constraint:
+
+Sentinel-2 10 m imagery is appropriate for large-area change, not one-house, wall-level, or parcel-level surveillance.
+
+## Removed from commercial MVP
+
+- flood analysis
+- disaster-response workflow
+- SAR flood preprocessing
+- permanent-water flood filtering
+- disaster demo
+
+## Delivery model
+
+SATCHETAK is best framed as **Observation as a Service / monitored-location intelligence**:
 
 ```text
-compatible Sentinel-2 six-band input
-Blue + Green + Red + Narrow NIR + SWIR1 + SWIR2
-→ IBM/NASA Prithvi-EO-2.0-300M-TL-Sen1Floods11
-→ water/flood + cloud/no-data mask
+register AOI
+→ establish baseline
+→ discover new valid observation
+→ analyze
+→ surface meaningful change
+→ dashboard / report / alert
 ```
 
-These paths are evaluated independently. Their outputs normalize to a shared flood-evidence contract, but their inputs and preprocessing remain model-specific.
+## Commercial reference
 
-Do not route arbitrary SAR, RGB-only imagery, or unknown band semantics into either model. No automatic optical/SAR mask fusion is part of the MVP.
+SatSure validates the broader Earth-intelligence market: customers pay for derived decision intelligence, not raw pixels. SATCHETAK's initial wedge is self-service monitored-location intelligence with map-first UX, natural-language queries, visible evidence and provenance.
 
-### 4. Agricultural change analysis
+## MVP success definition
 
-This workflow has two levels.
-
-**Level A — broadly useful deterministic vegetation change**
-
-When Red and NIR semantics are known:
-
-```text
-NDVI(T1)
-NDVI(T2)
-ΔNDVI
-```
-
-Additional indices are allowed only when their required bands exist.
-
-Outputs:
-
-- vegetation-index rasters;
-- thresholded change regions when a threshold policy is explicitly defined;
-- area/statistics from GIS tools.
-
-**Level B — narrow crop classification**
-
-Use the official IBM/NASA Prithvi multi-temporal crop-classification checkpoint only when the documented input is satisfied:
-
-```text
-3 timestamps × 6 HLS-style bands
-Blue, Green, Red, Narrow NIR, SWIR1, SWIR2
-= 18-band GeoTIFF contract
-```
-
-A crop-map difference may then support an agricultural change statement.
-
-## Non-goals
-
-Initial SATCHETAK will not:
-
-- train/fine-tune any model;
-- predict crop yield;
-- diagnose crop disease from arbitrary imagery;
-- infer soil chemistry;
-- estimate damage cost;
-- perform generic object detection for every possible class;
-- support every satellite;
-- align unrelated scenes automatically with an opaque learned registrar;
-- generate numeric confidence without calibration;
-- execute arbitrary LLM-selected code.
-
-## Success definition
-
-The MVP succeeds when all four workflows:
-
-1. reject incompatible inputs correctly;
-2. run one qualified pretrained implementation;
-3. preserve original geospatial context;
-4. return spatial evidence;
-5. produce deterministic measurements only when metadata supports them;
-6. expose model/version/preprocessing provenance;
-7. pass at least one golden success case and one negative/refusal case.
-
-## Design priority
-
-```text
-correctness
-> traceability
-> robustness
-> usability
-> latency
-> feature count
-```
-
-Latency matters, but never by silently weakening preprocessing or verification.
+A real user can draw an AOI, select Agriculture or Urban/Land, select a period, automatically obtain valid T1/T2 observations, view before/after evidence and quantified change, ask a natural-language question about the result, and save the site for future monitoring.
